@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Browser Javscript Native Popup</title>
+    <link rel="stylesheet" href="./assets/css/native_popup.css">
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <style>
+        button{cursor:pointer;}
+        button + button{margin-left:10px;}
+        .button_area{width:200px;height:100px;line-height:100px;text-align:center;float:left;border-right:1px dashed #333;}
+        
+
+        /* native_popup */
+        .np_wrap{z-index:9999;position:fixed;top:10px;left:50%;transform:translateX(-50%);padding:20px;width:450px;min-height:130px;border-radius:3px;border:1px solid #cdcdcd;box-shadow:1px 1px 1px rgba(0,0,0,0.4);background:#fff;box-sizing:border-box;}
+        
+        .np_title{font-size:20x;color:#333;}
+        .np_message{padding:10px 0;font-size:14px;color:#5f6368;}
+        .np_text{width:100%;height:25px;text-indent:5px;border:1px solid #cdcdcd;border-radius:3px;box-sizing:border-box;}
+
+        .np_btn_area{text-align:right;padding-top:15px;}
+        .np_done{width:65px;height:30px;border:1px solid #5793f5;border-radius:3px;background:#669df6;color:#fff;} 
+        .np_done:hover{background:#699beb;}
+
+        .np_cancel{width:65px;height:30px;border:1px solid #cdcdcd;border-radius:3px;color:#669df6;background:#fff;} 
+        .np_cancel:hover{background:#fafafa;}
+    </style>
+</head>
+<body>
+    <div class="button_area">
+        <button id="ori_alert">오리지날 alert</button>
+        <button id="alert">alert</button>
+    </div>
+    <div class="button_area">
+        <button id="ori_prompt">오리지날 prompt</button>
+        <button id="prompt">prompt</button>
+    </div>
+    <div class="button_area">
+        <button id="ori_confirm">오리지날 confirm</button>
+        <button id="confirm">confirm</button>
+    </div>
+    <script src="./assets/js/native_popup.js"></script>
+    <script>  
+        var UIManager = (function(){
+            'use strict';
+
+            var popup = new NativePopup();
+
+            $('#alert').on('click', function(){
+                popup.alert('바보야');
+
+            });
+
+            $('#prompt').on('click', function(){
+                popup.prompt('오늘 기분이 어떻니?', function(feeling){
+                    if(feeling === null) return false;
+
+                    feeling = ($.trim(feeling) == '') ? '입력을 안했구나!' : feeling;
+                    alert('너의 기분은 ' + feeling);
+
+                });
+
+            });
+
+            $('#confirm').on('click', function(){
+                popup.confirm('바보야');
+
+            });
+
+            // original ==============================================
+            $('#ori_alert').on('click', function(){
+                alert('안녕하세요.\기분 좋은 하루 되세요!');
+
+            });
+
+            $('#ori_prompt').on('click', function(){
+                var feeling =  prompt('오늘 기분이 어떻니?');
+
+                if(feeling === null) return false;
+
+                feeling = ($.trim(feeling) == '') ? '입력을 안했구나!' : feeling;
+                alert('너의 기분은 ' + feeling);
+
+            });
+
+            $('#ori_confirm').on('click', function(){   
+                var feeling = confirm('오늘 너의 기분은 좋니?');
+                (feeling) ? alert('다행이야!') : alert('힘을 내렴!');
+
+            });
+            // original ==============================================
+        })();
+        
+        
+    </script>
+</body>
+</html>
