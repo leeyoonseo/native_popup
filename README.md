@@ -1,9 +1,10 @@
 # native_popup
-<pre>
+
 브라우저 팝업 형태의 모듈(alert, prompt, confirm)
 
 사용법
 
+<pre>
 var popup = new NativePopup();
 
 popup.alert('안녕하세요.\n저는 팝업입니다.');
