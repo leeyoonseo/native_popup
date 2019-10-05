@@ -1,41 +1,101 @@
 /**
- * @author Lee Yoon Seo (2019.09)
+ * @author Lee Yoon Seo (2019.09~)
  * @version 1.0.0
- * @return {Object} alert, confirm [TODO] prompt
  * @usage 
- * <pre>
- *  사용법
- * </pre>
- * @support 
+ *  var popup = new NativePopup();
+ *  popup.alert('메세지\n입력중');
+ *  
+ *  popup.prompt('1+1은?', function(res){
+ *    console.log(res); // 사용자 입력 값 
+ *  });
+ * 
+ *  popup.confirm('일요일입니까?', function(res){
+ *    console.log(res); // 확인 취소에 따른 boolean 값
+ *  });
  */
+
 window.NativePopup = function(){
     this.name = "Browser JS Native Popup";
     this.version = "1.0.0";
+    this.initState = false;
 
-    this.state = false;
-
-    this.type = {
-        '0' : 'alert',
-        '1' : 'prompt',
-        '2' : 'confirm'
-    };
+    // 0 : alert , 1 : prompt, 2 : confirm
+    this.type;
+    this.message;
 };
+
+/*
+    [TODO]
+    1. 열고 닫고 애니메이션
+    2. ESC 누르면 닫기
+    3. 프로토타입 말고 바로 실행 함수로 수정하자
+*/
 
 window.NativePopup.prototype = {
     constructor : NativePopup,
 
+    /**
+     * alert 팝업
+     * @param {String} message 노출할 메세지
+     */
+    alert : function(message){
+        this.message = this.setMessage(message);
 
-    createLayer : function(message){
-        // [TODO] create 메서드로 빼도록
+        if(this.type !== null && this.type === '0'){
+            this.showPopup();
+
+        }else{
+            this.type = '0';
+            this.setNewPopup();
+        }
+    },    
+
+    /**
+     * prompt 팝업
+     * @param {String} message 노출할 메세지
+     * @param {Object} callback 입력한 값에 대한 리턴 값을 받을 콜백함수
+     */
+    prompt : function(message, callback){
+        this.message = this.setMessage(message);
+
+        if(this.type !== null && this.type === '1'){
+            this.showPopup();
+
+        }else{
+            this.type = '1';
+            this.setNewPopup(callback);
+        }
+    },
+
+    /**
+     * confirm 팝업
+     * @param {String} message 노출할 메세지
+     * @param {Object} callback 입력한 값에 대한 리턴 값을 받을 콜백함수
+     */
+    confirm : function(message, callback){
+        this.message = this.setMessage(message);
+
+        if(this.type !== null && this.type === '2'){
+            this.showPopup();
+
+        }else{
+            this.type = '2';
+            this.setNewPopup(callback);
+        }
+    },
+
+    /**
+     * 팝업 레이아웃 생성
+     */
+    createPopup : function(){
         this.wrap = $('<div></div>', {'class' : 'np_wrap'});
         this.title = $('<div></div>', {'class' : 'np_title'}).html('이 페이지 내용:<br>');
-        this.msg = $('<div></div>', {'class' : 'np_message'}).text(message);
+        this.msg = $('<div></div>', {'class' : 'np_message'}).append(this.message);
         this.wrap.append(this.title)
-                 .append(this.msg);
+                .append(this.msg);
 
         this.btnArea = $('<div></div>', {'class' : 'np_btn_area'});
 
-        // [TODO] 문구도 custom 할 수 있게 끔 create랑 set이랑 메서드 나누기 
         this.done = $('<button></button>', {
             'type' : 'button', 
             'class' : 'np_done'
@@ -43,6 +103,7 @@ window.NativePopup.prototype = {
         
         this.btnArea.append(this.done);
 
+        // prompt
         if(this.type === '1'){
             this.textField = $('<input></input>', {
                 'type' : 'text', 
@@ -52,9 +113,9 @@ window.NativePopup.prototype = {
             }); 
 
             this.wrap.append(this.textField);
-
         }
-        
+
+        // prompt, confirm
         if(this.type !== '0') {
             this.cancel = $('<button></button>', {
                 'type' : 'button', 
@@ -62,227 +123,137 @@ window.NativePopup.prototype = {
             }).text('취소');
 
             this.btnArea.append(this.cancel);
-
         }
         
         this.wrap.append(this.btnArea);
-        $('body').append(this.wrap);
+        $('body').append(this.wrap);     
 
-        // 생성 시 true
-        this.state = true;
+        // append 후 작업 ----------------------------- ↓
+        if(this.type === '1') $(this.textField).focus();
     },
 
-    toggleLayer : function(){
-        console.log('toggleLayer');
-
-    },
-
-    alert : function(message){
-        // [TODO] 중복 삭제 말고 같은 타입일 경우 재 사용하도록
+    /**
+     * 팝업 새로 셋팅
+     * @param {Object} callback 입력한 값에 대한 리턴 값을 받을 콜백함수
+     */
+    setNewPopup : function(callback){
         if(this.wrap) this.destroy();
+        if(callback) this.callback = callback;
 
-        this.type = '0';
-
-        // html
-        !this.state ? this.createLayer(message) : this.toggleLayer(message);
-        
+        this.createPopup();
         this.attachEvent();
     },
 
-    prompt : function(message, callback){
-        console.log('prompt', callback);
-        // [TODO] 중복 삭제 말고 같은 타입일 경우 재 사용하도록
-        if(this.wrap) this.destroy();
+    /**
+     * 팝업 Show
+     * @param {String} message 노출할 메세지
+     * @param {Object} callback 입력한 값에 대한 리턴 값을 받을 콜백함수
+     */
+    showPopup : function(){
+        this.wrap.show();
 
-        this.type = '1';
-        this.callback = callback;
-
-        // html
-        !this.state ? this.createLayer(message) : this.toggleLayer(message);
-
-        this.attachEvent();
-        
+        if(this.type === '1') $(this.textField).val('').focus();
     },
 
-    attachEvent : function(){
-        var Manager = this;
-
-        this.done.on('click', function(){
-            Manager.onHide(function(){
-                if(!Manager.callback) return false;
-
-                var result = (Manager.type === '1') ? Manager.textField.val() : true;
-                Manager.callback(result);
-
-            });
-
-        });
-
-        this.cancel.on('click', function(){
-            Manager.onHide();
-
-        });
-
-    },
-
-    dettachEvent : function(){
-
-    },
-
-    onDone : function(){
-
-    },
-    onHide : function(callback){
+    /**
+     * 팝업 Hide
+     * @param {String} message 노출할 메세지
+     * @param {Object} callback 입력한 값에 대한 리턴 값을 받을 콜백함수
+     */
+    hidePopup : function(callback){
         this.wrap.hide(50, function(){
             if(callback) callback();
             
         });
     },
 
-    confirm : function(message, callback){
-        this.type = '3';
-        // this.callback = callback;
+    /**
+     * 버튼 이벤트 설정
+     */
+    attachEvent : function(){
+        var Manager = this;          
+
+        // 최초에만 실행
+        if(!this.initState) this.onESC();
+        
+        this.done.on('click', function(){
+            Manager.onDone();
+
+        });
+
+        if(this.type !== '0'){
+            this.cancel.on('click', function(){
+                Manager.onCancel();
+
+            });
+        }
     },
 
-    
-
-    
-
-    destroy : function(){
-        console.log('destroy=============');
-        $('body').find(this.wrap).remove();
-
+    /**
+     * 버튼 이벤트 해제
+     */
+    dettachEvent : function(){
+        if(this.done) this.done.off();
+        if(this.cancel) this.cancel.off();
     },
 
-    // addClass : function(){
+    /**
+     * 확인 버튼 클릭 시
+     */
+    onDone : function(){
+        var Manager = this;
 
-    // },
+        this.hidePopup(function(){
+            if(!Manager.callback) return false;
+            var result = (Manager.type === '1') ? Manager.textField.val() : true;
+        
+            Manager.callback(result);
+        });
+    },
 
-    // customCSS : function(){
+    /**
+     * 취소 버튼 클릭 시
+     */
+    onCancel : function(){
+        var Manager = this;
 
-
-    // }
-
-
-};
-
-// window.LayerMessageBox = (function($){
-
-//     var name = "LayerMessageBox";
-//     var wrap = $('.rec_layer_wrap');
-
-//     var callbackFunc;
-    
-//     function _attachEvent(){
-
-//         // 확인 버튼 클릭 
-//         wrap.find('.submit').on('click', function(){
-//             if(callbackFunc) callbackFunc(true); // callback 함수가 있을 경우(confirm) true를 리턴
-
-//             _setUI(false);
-
-//         }).end()        
-//         .find('.btn_layer_close, .close').on('click', function(){
+        this.hidePopup(function(){
+            if(!Manager.callback) return false;
             
-//             // 취소 버튼 클릭
-//             _setUI(false);
+            Manager.callback(false);
+        });
+    },
 
-//         });
-//     }
+    /**
+     * ESC 버튼 누를 시
+     */
+    onESC : function(){
+        var Manager = this;
 
-//     /**
-//      * _uiShow, _uiHide 호출 함수
-//      * state가 undefinde면 재귀 함수로 사용하므로 if문에 true, false를 명시해 줘야합니다.
-//      * @param {Boolean} state true = show, false = hide, undefind = hide, show
-//      */
-//     function _setUI(state){
-//         if(state === true){
-//             _uiShow();
+        $(document).on('keydown', function(e){
+            if(e.keyCode == 27){
+                Manager.wrap.hide();
+            } 
+        });
+    },
+    
+    /**
+     * 팝업 삭제
+     */
+    destroy : function(){
+        if(this.callback) this.callback = null;
 
-//         }else if(state === false){
-//             _uiHide();
+        this.dettachEvent();
+        this.type == null;
 
-//         }else{
-//             _uiHide();
-//             _uiShow();
+        $('body').find(this.wrap).remove();        
+    },
 
-//         }
-//     }
-
-//     function _uiHide(){
-//         wrap.hide()
-//             .find('.submit, .btn_layer_close, .close').hide();
-//     }
-
-//     function _uiShow(){
-//         if(callbackFunc) wrap.find('.close').show();
-
-//         wrap.hide()
-//             .find('.submit, .btn_layer_close').show();
-//     }
-
-//     /**
-//      * 메세지 삽입
-//      * state가 undefinde면 재귀 함수로 사용하므로 if문에 true, false를 명시해 줘야합니다.
-//      * @param {String} message 메세지
-//      */
-//     function _setMessage(message){
-//         var output = _replaceAll(message, '\n', '<br>');
-
-//         wrap.show()
-//         .find('.rec_layer_message').empty().append(output);
-//     }
-
-//     /**
-//      * 메세지 줄 바꿈 (브라우저 \n을 대체하기 위함)
-//      * state가 undefinde면 재귀 함수로 사용하므로 if문에 true, false를 명시해 줘야합니다.
-//      * @param {String} message 수정할 메세지
-//      * @param {String} org 수정되어야 할 문자열 (\n)
-//      * @param {String} dest 수정되는 문자열 (<br>)
-//      */
-//     function _replaceAll(message, org, dest){
-//         return message.split(org).join(dest);
-//     }
-
-//     // ------------------- public ↓
-
-//     /**
-//      * 레이어 팝업 alert
-//      * @see .html에서 호출
-//      * @param {String} message 메세지
-//      */
-//     function _alert(message){
-//         _setUI();
-//         _setMessage(message);
-
-//     }
-
-//     /**
-//      * 레이어 팝업 confirm
-//      * @see .html에서 호출
-//      * @param {String} message 메세지
-//      * @param {Object} callback 콜백 함수
-//      */
-//     function _confirm(message, callback){
-        
-//         // callback함수가 없으면 _alert로 호출
-//         if(!callback) {
-//             _alert(message);
-//             return false;
-
-//         }
-        
-//         callbackFunc = callback;
-
-//         _setUI();
-//         _setMessage(message);
-//     }
-
-//     _attachEvent();
-
-//     return { 
-//         alert : _alert,
-//         confirm : _confirm
-//     }
-
-// }(jQuery)); // RecordLayerPopup
+    /**
+     * 메세지 줄 바꿈 (\n 사용)
+     * @param {String} message 수정할 메세지
+     */
+    setMessage(message){
+        return message.split('\n').join('<br>');
+    }
+};
