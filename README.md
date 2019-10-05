@@ -26,3 +26,6 @@ popup.confirm('오늘 날씨는 맑음이니?', function(res){
 });
 
 </pre>
+
+데모확인
+https://leeyoonseo.github.io/native_popup/
